@@ -5,13 +5,17 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -22,10 +26,14 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     private ListView lstClientes;
+    private RecyclerView lstEvents;
+    private List<Event> events;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +45,12 @@ public class MainActivity extends AppCompatActivity {
         lstClientes = (ListView)findViewById(R.id.lstClientes);
         TareaWSListar tarea = new TareaWSListar();
         tarea.execute("http://meszumtest-erueloi.rhcloud.com/api/events/?format=json");
+
+        lstEvents = (RecyclerView)findViewById(R.id.rv);
+        rv.setHasFixedSize(true);
+        LinearLayoutManager llm = new LinearLayoutManager(getApplicationContext());
+        rv.setLayoutManager(llm);
+        events = new ArrayList<>();
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -102,6 +116,7 @@ public class MainActivity extends AppCompatActivity {
                     int idCli = obj.getInt("id");
                     String nombCli = obj.getString("title");
                     String address = obj.getString("address");
+                    String poster = obj.getString("poster");
 
                     clientes[i] = "" + idCli + " - " + nombCli + " - " + address;
                 }
@@ -152,4 +167,37 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
+//    public class RVAdapter extends RecyclerView.Adapter<RVAdapter.PersonViewHolder>{
+//
+//        public static class PersonViewHolder extends RecyclerView.ViewHolder {
+//            CardView cv;
+//            TextView personName;
+//            TextView personAge;
+//            ImageView personPhoto;
+//
+//            PersonViewHolder(View itemView) {
+//                super(itemView);
+//                cv = (CardView)itemView.findViewById(R.id.cv);
+//                personName = (TextView)itemView.findViewById(R.id.person_name);
+//                personAge = (TextView)itemView.findViewById(R.id.person_age);
+//                personPhoto = (ImageView)itemView.findViewById(R.id.person_photo);
+//            }
+//        }
+//
+//    }
 }
+
+class Event {
+    int id;
+    String title;
+    String poster;
+
+    Event(int id, String title, String poster) {
+        this.id = id;
+        this.title = title;
+        this.poster = poster;
+    }
+}
+
+
