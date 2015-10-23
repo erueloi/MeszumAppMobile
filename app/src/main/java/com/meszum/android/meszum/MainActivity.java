@@ -47,9 +47,9 @@ public class MainActivity extends AppCompatActivity {
         tarea.execute("http://meszumtest-erueloi.rhcloud.com/api/events/?format=json");
 
         lstEvents = (RecyclerView)findViewById(R.id.rv);
-        rv.setHasFixedSize(true);
+        lstEvents.setHasFixedSize(true);
         LinearLayoutManager llm = new LinearLayoutManager(getApplicationContext());
-        rv.setLayoutManager(llm);
+        lstEvents.setLayoutManager(llm);
         events = new ArrayList<>();
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
