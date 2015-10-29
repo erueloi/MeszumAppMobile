@@ -5,13 +5,16 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -31,10 +34,6 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private ListView lstClientes;
-    private RecyclerView lstEvents;
-    private List<Event> events;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,15 +41,8 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        lstClientes = (ListView)findViewById(R.id.lstClientes);
         TareaWSListar tarea = new TareaWSListar();
         tarea.execute("http://meszumtest-erueloi.rhcloud.com/api/events/?format=json");
-
-        lstEvents = (RecyclerView)findViewById(R.id.rv);
-        lstEvents.setHasFixedSize(true);
-        LinearLayoutManager llm = new LinearLayoutManager(getApplicationContext());
-        lstEvents.setLayoutManager(llm);
-        events = new ArrayList<>();
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -88,6 +80,8 @@ public class MainActivity extends AppCompatActivity {
     private class TareaWSListar extends AsyncTask<String,Integer,Boolean> {
 
         private String[] clientes;
+        private List<Event> events;
+
         protected Boolean doInBackground(String... params) {
 
             boolean resul = true;
@@ -109,16 +103,15 @@ public class MainActivity extends AppCompatActivity {
                     Log.v("CatalogClient", "Response code:"+ responseCode);
                 }
 
-                clientes = new String[response.length()];
+                events = new ArrayList<>();
                 for(int i=0; i<response.length(); i++)
                 {
                     JSONObject obj = response.getJSONObject(i);
-                    int idCli = obj.getInt("id");
-                    String nombCli = obj.getString("title");
+                    int idEvent = obj.getInt("id");
+                    String strTitleEvent = obj.getString("title");
                     String address = obj.getString("address");
                     String poster = obj.getString("poster");
-
-                    clientes[i] = "" + idCli + " - " + nombCli + " - " + address;
+                    events.add(new Event(idEvent, strTitleEvent, poster));
                 }
             }
             catch(Exception ex)
@@ -126,7 +119,6 @@ public class MainActivity extends AppCompatActivity {
                 Log.e("ServicioRest","Error!", ex);
                 resul = false;
             }
-
             return resul;
         }
 
@@ -159,33 +151,62 @@ public class MainActivity extends AppCompatActivity {
             {
                 //Rellenamos la lista con los nombres de los clientes
                 //Rellenamos la lista con los resultados
-                ArrayAdapter<String> adaptador =
-                        new ArrayAdapter<String>(MainActivity.this,
-                                android.R.layout.simple_list_item_1, clientes);
+//                ArrayAdapter<String> adaptador =
+//                        new ArrayAdapter<String>(MainActivity.this,
+//                                android.R.layout.simple_list_item_1, clientes);//
+//                lstClientes.setAdapter(adaptador);
 
-                lstClientes.setAdapter(adaptador);
+                RecyclerView rv = (RecyclerView)findViewById(R.id.rv);
+                rv.setHasFixedSize(true);
+                rv.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
+                RVAdapter adapter = new RVAdapter(events);
+                rv.setAdapter(adapter);
+
             }
         }
     }
 
-//    public class RVAdapter extends RecyclerView.Adapter<RVAdapter.PersonViewHolder>{
-//
-//        public static class PersonViewHolder extends RecyclerView.ViewHolder {
-//            CardView cv;
-//            TextView personName;
-//            TextView personAge;
-//            ImageView personPhoto;
-//
-//            PersonViewHolder(View itemView) {
-//                super(itemView);
-//                cv = (CardView)itemView.findViewById(R.id.cv);
-//                personName = (TextView)itemView.findViewById(R.id.person_name);
-//                personAge = (TextView)itemView.findViewById(R.id.person_age);
-//                personPhoto = (ImageView)itemView.findViewById(R.id.person_photo);
-//            }
-//        }
-//
-//    }
+    public class RVAdapter extends RecyclerView.Adapter<RVAdapter.EventViewHolder>{
+
+        public class EventViewHolder extends RecyclerView.ViewHolder {
+            CardView cv;
+            TextView personName;
+            TextView personAge;
+            ImageView personPhoto;
+
+            EventViewHolder(View itemView) {
+                super(itemView);
+                cv = (CardView)itemView.findViewById(R.id.cv);
+                personName = (TextView)itemView.findViewById(R.id.person_name);
+                personAge = (TextView)itemView.findViewById(R.id.person_age);
+                personPhoto = (ImageView)itemView.findViewById(R.id.person_photo);
+            }
+        }
+        List<Event> events;
+        RVAdapter(List<Event> lstEvents){
+            this.events = lstEvents;
+        }
+
+        @Override
+        public EventViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
+            View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.event, viewGroup, false);
+            EventViewHolder pvh = new EventViewHolder(v);
+            return pvh;
+        }
+
+        @Override
+        public void onBindViewHolder(EventViewHolder eventViewHolder, int i) {
+            eventViewHolder.personName.setText(events.get(i).id);
+            eventViewHolder.personAge.setText(events.get(i).title);
+            //eventViewHolder.personPhoto.setImageResource(events.get(i).poster);
+        }
+
+        @Override
+        public int getItemCount() {
+            return events.size();
+        }
+
+    }
 }
 
 class Event {
