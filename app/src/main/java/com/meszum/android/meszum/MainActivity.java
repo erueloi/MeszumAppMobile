@@ -1,11 +1,13 @@
 package com.meszum.android.meszum;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -31,6 +33,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.squareup.picasso.Picasso;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -111,7 +115,8 @@ public class MainActivity extends AppCompatActivity {
                     String strTitleEvent = obj.getString("title");
                     String address = obj.getString("address");
                     String poster = obj.getString("poster");
-                    events.add(new Event(idEvent, strTitleEvent, poster));
+                    String description = obj.getString("description");
+                    events.add(new Event(idEvent, strTitleEvent, description, poster));
                 }
             }
             catch(Exception ex)
@@ -149,16 +154,10 @@ public class MainActivity extends AppCompatActivity {
 
             if (result)
             {
-                //Rellenamos la lista con los nombres de los clientes
-                //Rellenamos la lista con los resultados
-//                ArrayAdapter<String> adaptador =
-//                        new ArrayAdapter<String>(MainActivity.this,
-//                                android.R.layout.simple_list_item_1, clientes);//
-//                lstClientes.setAdapter(adaptador);
-
                 RecyclerView rv = (RecyclerView)findViewById(R.id.rv);
-                rv.setHasFixedSize(true);
-                rv.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
+//                rv.setHasFixedSize(true);
+//                rv.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
+                rv.setLayoutManager(new GridLayoutManager(getApplicationContext(), 2));
                 RVAdapter adapter = new RVAdapter(events);
                 rv.setAdapter(adapter);
 
@@ -196,9 +195,10 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(EventViewHolder eventViewHolder, int i) {
-            eventViewHolder.personName.setText(events.get(i).id);
-            eventViewHolder.personAge.setText(events.get(i).title);
-            //eventViewHolder.personPhoto.setImageResource(events.get(i).poster);
+            eventViewHolder.personName.setText(events.get(i).title);
+            eventViewHolder.personAge.setText(events.get(i).description);
+            Context context = eventViewHolder.personPhoto.getContext();
+            Picasso.with(context).load(events.get(i).poster).resize(140, 220).into(eventViewHolder.personPhoto);
         }
 
         @Override
@@ -212,11 +212,13 @@ public class MainActivity extends AppCompatActivity {
 class Event {
     int id;
     String title;
+    String description;
     String poster;
 
-    Event(int id, String title, String poster) {
+    Event(int id, String title, String description, String poster) {
         this.id = id;
         this.title = title;
+        this.description = description;
         this.poster = poster;
     }
 }
