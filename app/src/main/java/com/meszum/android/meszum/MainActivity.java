@@ -198,7 +198,7 @@ public class MainActivity extends AppCompatActivity {
             eventViewHolder.personName.setText(events.get(i).title);
             eventViewHolder.personAge.setText(events.get(i).description);
             Context context = eventViewHolder.personPhoto.getContext();
-            Picasso.with(context).load(events.get(i).poster).resize(350, 560).into(eventViewHolder.personPhoto);
+            Picasso.with(context).load(events.get(i).poster).resize(370, 560).into(eventViewHolder.personPhoto);
         }
 
         @Override
